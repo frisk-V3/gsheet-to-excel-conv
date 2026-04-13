@@ -1,0 +1,47 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "main" ] # mainブランチにプッシュされたら実行
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: Build EXE
+        run: |
+          pyinstaller --onefile --console --name "Excel_CSV_Fixer" main.py
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Excel_CSV_Fixer_EXE
+          path: dist/Excel_CSV_Fixer.exe
+          retention-days: 1 # サーバー負荷を考え最低期間の1日に設定
+
+      - name: Output Download URL Instruction
+        shell: bash
+        run: |
+          echo "============================================================"
+          echo "ビルドが完了しました！"
+          echo "以下の手順でEXEをダウンロードして、手動でReleaseにアップロードしてください。"
+          echo ""
+          echo "1. GitHub上の [Actions] タブをクリック"
+          echo "2. 一番上の最新の実行ログ（今のこれ）を選択"
+          echo "3. 画面下の 'Artifacts' セクションにある 'Excel_CSV_Fixer_EXE' をクリック"
+          echo "   (※このリンクはGitHubの仕様上、数日間有効ですが早めに落としてください)"
+          echo "============================================================"
